@@ -4,6 +4,7 @@ import os
 import numpy as np
 from datetime import datetime
 import time
+import pygame
 
 model = YOLO("yolov8n.pt")
 existing_ids = set()
@@ -32,9 +33,12 @@ def captureLiveVideo():
                     if person_id not in existing_ids:
                         existing_ids.add(person_id)
                         saveFrame(annotated_frame)
+                        pygame.mixer.init()
                         if not is_recording:
                             is_recording = True
+                            pygame.mixer.music.load(f"Sentry-Alerts/Sounds/alarm_sound.mp3")
                             start_time = time.time()
+                            pygame.mixer.music.play()
                             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                             width = int(captureVideo.get(cv.CAP_PROP_FRAME_WIDTH))
                             height = int(captureVideo.get(cv.CAP_PROP_FRAME_HEIGHT))
@@ -43,6 +47,7 @@ def captureLiveVideo():
                 rec_clip.write(frame)
                 if time.time() - start_time >= 60:
                     is_recording = False
+                    pygame.mixer.music.stop()
                     rec_clip.release()
                     rec_clip = None
             cv.imshow("Live Video", annotated_frame)
