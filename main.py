@@ -9,9 +9,13 @@ import pygame
 model = YOLO("yolov8n.pt")
 existing_ids = set()
 fourcc = cv.VideoWriter_fourcc(*'XVID')
+pygame.mixer.init()
 
 def captureLiveVideo():
-    captureVideo = cv.VideoCapture(0)
+    captureVideo = cv.VideoCapture(0, cv.CAP_V4L2)
+    captureVideo.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc(*'YUYV'))
+    captureVideo.set(cv.CAP_PROP_FPS, 25)
+    captureVideo.set(cv.CAP_PROP_BUFFERSIZE, 1)
     if not captureVideo.isOpened():
         exit()
     is_recording = False
@@ -33,7 +37,6 @@ def captureLiveVideo():
                     if person_id not in existing_ids:
                         existing_ids.add(person_id)
                         saveFrame(annotated_frame)
-                        pygame.mixer.init()
                         if not is_recording:
                             is_recording = True
                             pygame.mixer.music.load(f"Sentry-Alerts/Sounds/alarm_sound.mp3")
@@ -42,7 +45,7 @@ def captureLiveVideo():
                             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                             width = int(captureVideo.get(cv.CAP_PROP_FRAME_WIDTH))
                             height = int(captureVideo.get(cv.CAP_PROP_FRAME_HEIGHT))
-                            rec_clip = cv.VideoWriter(f"Sentry-Alerts/Videos/REC_{timestamp}.avi", fourcc, 20.0, (width, height))
+                            rec_clip = cv.VideoWriter(f"Sentry-Alerts/Videos/REC_{timestamp}.avi", fourcc, 25.0, (width, height))
             if is_recording and rec_clip is not None:
                 rec_clip.write(frame)
                 if time.time() - start_time >= 60:
